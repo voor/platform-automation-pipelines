@@ -78,7 +78,7 @@ jobs:
   - #@ credhub_interpolate()
   - task: download-product
     image: platform-automation-image
-    file: platform-automation-tasks/tasks/download-product.yml
+    file: platform-automation-tasks/tasks/download-product-s3.yml
     input_mapping:
       config: #@ "product-config-{}".format(product_alias)
       vars: interpolated-files

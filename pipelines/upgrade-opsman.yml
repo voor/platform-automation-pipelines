@@ -37,7 +37,7 @@ resources:
     access_key_id: ((s3.access_key_id))
     secret_access_key: ((s3.secret_access_key))
     bucket: ((s3.buckets.foundation))
-    regexp: installation-before-(.*).zip
+    regexp: ((foundation))/installation-before-(.*).zip
 
 - name: installation-after
   type: s3
@@ -47,7 +47,7 @@ resources:
     access_key_id: ((s3.access_key_id))
     secret_access_key: ((s3.secret_access_key))
     bucket: ((s3.buckets.foundation))
-    regexp: installation-after-(.*).zip
+    regexp: ((foundation))/installation-after-(.*).zip
 
 - name: product-config-opsman
   type: semver-config
@@ -82,6 +82,7 @@ credhub-interpolate: &credhub-interpolate
     CREDHUB_SECRET: ((credhub.secret))
     PREFIX: /concourse/((foundation))
     INTERPOLATION_PATHS: ((credhub.interpolate_folders))
+    SKIP_MISSING: true
 
 jobs:
 # 1. export-installation-before
