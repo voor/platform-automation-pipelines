@@ -1,0 +1,41 @@
+resource_types:
+  - name: semver-config
+    type: docker-image
+    source:
+      repository: voor/semver-config-concourse-resource
+      tag: "2019-07-21"
+
+resources:
+  - name: product-config-pas
+    type: semver-config
+    source:
+      driver: git
+      uri: "https://github.com/voor/platform-automation-configuration.git"
+      branch: master
+      private_key: ""
+      config_file: dev/products.yml
+      config_path: products.pas
+      version_path: products.pas.product-version
+      version_pattern: "m.n.p"
+
+jobs:
+  - name: test-semver-config
+    plan:
+      - get: product-config-pas
+      - task: test-resources
+        input_mapping:
+          product-config-pas: product-config-pas
+        config:
+          image_resource:
+            type: docker-image
+            source:
+              repository: ubuntu
+          platform: linux
+          inputs:
+            - name: product-config-pas
+          run:
+            path: /bin/sh
+            args:
+              - -c
+              - |
+                cat product-config-pas/semver-config.yaml
