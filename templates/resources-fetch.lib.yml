@@ -42,18 +42,6 @@ resources:
       bucket: ((s3.buckets.products))
       regexp: ((s3.opsman.regex))
 
-  - name: product-config-opsman
-    type: semver-config
-    source:
-      driver: git
-      uri: ((git.configuration.uri))
-      branch: ((git.configuration.branch))
-      private_key: ((git.private_key))
-      config_file: ((foundation))/products.yml
-      config_path: products.opsman
-      version_path: products.opsman.product-version
-      version_pattern: "m.n.p"
-
   #! product related resourses
 
   #@ for product in products():
@@ -81,17 +69,6 @@ resources:
       bucket: ((s3.buckets.products))
       regexp: #@ "{}-stemcells/\[stemcells-ubuntu-xenial,(.*)\]bosh-stemcell-.*-((iaas)).*\.tgz".format(product_alias)
 
-  - name: #@ "product-config-{}".format(product_alias)
-    type: semver-config
-    source:
-      driver: git
-      uri: ((git.configuration.uri))
-      branch: ((git.configuration.branch))
-      private_key: ((git.private_key))
-      config_file: ((foundation))/((git.configuration.products_file))
-      config_path: #@ "products.{}".format(product_alias)
-      version_path: #@ "products.{}.product-version".format(product_alias)
-      version_pattern: "m.n.p"
 #@ end
 #! end of for product in products():
 
