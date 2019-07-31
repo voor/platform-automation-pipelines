@@ -17,7 +17,7 @@ s3:
 
 # Not stored in concourse as variables, they're going to be secrets in k8s.
 credhub:
-  server: https://credhub.planetvoor.com:8844 # CredHub endpoint
+  server: https://192.168.2.5:8844 # CredHub endpoint
   ca_cert: ((credhub.ca_cert)) # CA Cert from CredHub
   client: ((credhub.client)) # UAA Client for CredHub access
   secret: ((credhub.secret)) # UAA secret for CredHub access
