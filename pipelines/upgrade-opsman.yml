@@ -1,14 +1,5 @@
 ---
 
-resource_types:
-# A custom Concourse Resource type for detecting Semver-based config
-# Ref: https://github.com/brightzheng100/semver-config-concourse-resource
-- name: semver-config
-  type: docker-image
-  source:
-    repository: voor/semver-config-concourse-resource
-    tag: "2019-07-21"
-
 resources:
 - name: platform-automation-tasks
   type: s3
@@ -50,18 +41,6 @@ resources:
     bucket: ((s3.buckets.foundation))
     regexp: ((foundation))/installation-after-(.*).zip
 
-- name: product-config-opsman
-  type: semver-config
-  source:
-    driver: git
-    uri: ((git.configuration.uri))
-    branch: master
-    private_key: ((git.private_key))
-    config_file: ((foundation))/products.yml
-    config_path: products.opsman
-    version_path: products.opsman.product-version
-    version_pattern: "m.n.p"
-
 - name: configuration
   type: git
   source:
@@ -90,14 +69,13 @@ jobs:
 - name: export-installation-before
   serial: true
   plan:
-  - aggregate:
-    - get: product-config-opsman
-      trigger: true
+  - in_parallel:
     - get: platform-automation-image
       params: {unpack: true}
     - get: platform-automation-tasks
       params: {unpack: true}
     - get: configuration
+      trigger: true
   - task: credhub-interpolate
     <<: *credhub-interpolate
   - task: export-installation
@@ -116,26 +94,25 @@ jobs:
 - name: upgrade-opsman
   serial: true
   plan:
-  - aggregate:
-    - get: product-config-opsman
-      passed: [export-installation-before]
-      trigger: true
+  - in_parallel:
     - get: platform-automation-image
       params: {unpack: true}
     - get: platform-automation-tasks
       params: {unpack: true}
     - get: installation-before
     - get: configuration
+      passed: [export-installation-before]
+      trigger: true
   - task: credhub-interpolate
     <<: *credhub-interpolate
   - task: download-product
     image: platform-automation-image
     file: platform-automation-tasks/tasks/download-product.yml
     input_mapping:
-      config: product-config-opsman
+      config: interpolated-files
       vars: interpolated-files
     params:
-      CONFIG_FILE: semver-config.yaml
+      CONFIG_FILE: vars/((foundation))/config/opsman.yml
       VARS_FILES: vars/((foundation))/config/global.yml
   - task: upgrade-opsman
     image: platform-automation-image
@@ -203,15 +180,14 @@ jobs:
 - name: configure-director
   serial: true
   plan:
-  - aggregate:
-    - get: product-config-opsman
-      passed: [upgrade-opsman]
-      trigger: true
+  - in_parallel:
     - get: platform-automation-image
       params: {unpack: true}
     - get: platform-automation-tasks
       params: {unpack: true}
     - get: configuration
+      passed: [upgrade-opsman]
+      trigger: true
   - task: credhub-interpolate
     <<: *credhub-interpolate
   - task: configure-director
@@ -230,14 +206,13 @@ jobs:
 - name: apply-director-changes
   serial: true
   plan:
-  - aggregate:
-    - get: product-config-opsman
-      passed: [configure-director]
+  - in_parallel:
     - get: platform-automation-image
       params: {unpack: true}
     - get: platform-automation-tasks
       params: {unpack: true}
     - get: configuration
+      passed: [configure-director]
   - task: credhub-interpolate
     <<: *credhub-interpolate
   - task: apply-director-changes
@@ -279,15 +254,14 @@ jobs:
 - name: export-installation-after
   serial: true
   plan:
-  - aggregate:
-    - get: product-config-opsman
-      passed: [apply-director-changes]
-      trigger: true
+  - in_parallel:
     - get: platform-automation-image
       params: {unpack: true}
     - get: platform-automation-tasks
       params: {unpack: true}
     - get: configuration
+      passed: [apply-director-changes]
+      trigger: true
   - task: credhub-interpolate
     <<: *credhub-interpolate
   - task: export-installation

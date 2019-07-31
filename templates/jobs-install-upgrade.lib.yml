@@ -67,9 +67,7 @@ jobs:
   - download-upload-stage-product
   serial: true
   plan:
-  - aggregate:
-    - get: #@ "product-config-{}".format(product_alias)
-      trigger: true
+  - in_parallel:
     - get: platform-automation-image
       params: {unpack: true}
     - get: platform-automation-tasks
@@ -80,10 +78,10 @@ jobs:
     image: platform-automation-image
     file: platform-automation-tasks/tasks/download-product-s3.yml
     input_mapping:
-      config: #@ "product-config-{}".format(product_alias)
+      config: interpolated-files
       vars: interpolated-files
     params:
-      CONFIG_FILE: semver-config.yaml
+      CONFIG_FILE: #@ "vars/((foundation))/config/{}.yml".format(product_alias)
       VARS_FILES: vars/((foundation))/config/global.yml
   - task: upload-product
     image: platform-automation-image
@@ -116,16 +114,15 @@ jobs:
   - generate-product-config
   serial: true
   plan:
-  - aggregate:
-    - get: #@ "product-config-{}".format(product_alias)
-      passed: 
-      - #@ "download-upload-stage-product-{}".format(product_alias)
-      trigger: true
+  - in_parallel:
     - get: platform-automation-image
       params: {unpack: true}
     - get: platform-automation-tasks
       params: {unpack: true}
     - get: configuration
+      passed: 
+      - #@ "download-upload-stage-product-{}".format(product_alias)
+      trigger: true
   - #@ credhub_interpolate()
   - task: staged-config
     image: platform-automation-image
@@ -143,15 +140,14 @@ jobs:
   - configure-product
   serial: true
   plan:
-  - aggregate:
-    - get: #@ "product-config-{}".format(product_alias)
-      passed:
-      - #@ "generate-product-config-{}".format(product_alias)
+  - in_parallel:
     - get: platform-automation-image
       params: {unpack: true}
     - get: platform-automation-tasks
       params: {unpack: true}
     - get: configuration
+      passed:
+      - #@ "generate-product-config-{}".format(product_alias)
   - #@ credhub_interpolate()
   - task: configure-product
     image: platform-automation-image
@@ -172,18 +168,17 @@ jobs:
 - name: apply-product-changes
   serial: true
   plan:
-  - aggregate:
-      #@ for product in products():
-      #@ product_alias=product.split("|")[0]
-    - get: #@ "product-config-{}".format(product_alias)
-      passed:
-      - #@ "configure-product-{}".format(product_alias)
-      #@ end
+  - in_parallel:
     - get: platform-automation-image
       params: {unpack: true}
     - get: platform-automation-tasks
       params: {unpack: true}
     - get: configuration
+      passed:
+      #@ for product in products():
+      #@ product_alias=product.split("|")[0]
+      - #@ "configure-product-{}".format(product_alias)
+      #@ end
   - #@ credhub_interpolate()
   - task: apply-product-changes
     image: platform-automation-image
@@ -197,20 +192,16 @@ jobs:
 - name: export-installation
   serial: true
   plan:
-  - aggregate:
-      #@ for product in products():
-      #@ product_alias=product.split("|")[0]
-    - get: #@ "product-config-{}".format(product_alias)
-      passed:
-      - apply-product-changes
-      trigger: true
-      #@ end
+  - in_parallel:
     - get: platform-automation-image
       params: {unpack: true}
       passed: [apply-product-changes]
     - get: platform-automation-tasks
       params: {unpack: true}
     - get: configuration
+      passed:
+      - apply-product-changes
+      trigger: true
   - #@ credhub_interpolate()
   - task: export-installation
     image: platform-automation-image

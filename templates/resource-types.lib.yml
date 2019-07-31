@@ -1,6 +1,6 @@
 #! resource types
 
-resource_types:
+resource_types: []
 
 #@ def resource_types():
 
@@ -10,10 +10,10 @@ resource_types:
 #!     repository: pivotalcf/pivnet-resource
 #!     tag: latest-final
 
-- name: semver-config
-  type: docker-image
-  source:
-    repository: voor/semver-config-concourse-resource
-    tag: "2019-07-21"
+#! - name: semver-config
+#!   type: docker-image
+#!   source:
+#!     repository: voor/semver-config-concourse-resource
+#!     tag: "2019-07-21"
 
 #@ end
