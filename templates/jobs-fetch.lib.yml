@@ -42,10 +42,9 @@ jobs:
         file: platform-automation-tasks/tasks/download-product.yml
         input_mapping:
           config: interpolated-files
-          vars: interpolated-files
         params:
-          CONFIG_FILE: vars/((foundation))/config/opsman.yml
-          VARS_FILES: vars/((foundation))/config/global.yml
+          CONFIG_FILE: ((foundation))/config/opsman.yml
+          VARS_FILES: config/((foundation))/config/global.yml
       - put: opsman-product
         params:
           file: downloaded-product/*.ova
@@ -79,12 +78,11 @@ jobs:
         file: platform-automation-tasks/tasks/download-product.yml
         input_mapping:
           config: interpolated-files
-          vars: interpolated-files
         output_mapping:
           downloaded-stemcell: #@ "{}-stemcell".format(product_alias)
         params:
-          CONFIG_FILE: #@ "config/((foundation))/config/{}.yml".format(product_alias)
-          VARS_FILES: vars/((foundation))/config/global.yml
+          CONFIG_FILE: #@ "((foundation))/config/{}.yml".format(product_alias)
+          VARS_FILES: config/((foundation))/config/global.yml
       - in_parallel:
           - put: #@ "{}-product".format(product_alias)
             params:

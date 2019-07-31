@@ -110,10 +110,9 @@ jobs:
     file: platform-automation-tasks/tasks/download-product.yml
     input_mapping:
       config: interpolated-files
-      vars: interpolated-files
     params:
-      CONFIG_FILE: vars/((foundation))/config/opsman.yml
-      VARS_FILES: vars/((foundation))/config/global.yml
+      CONFIG_FILE: ((foundation))/config/opsman.yml
+      VARS_FILES: config/((foundation))/config/global.yml
   - task: upgrade-opsman
     image: platform-automation-image
     file: platform-automation-tasks/tasks/upgrade-opsman.yml
