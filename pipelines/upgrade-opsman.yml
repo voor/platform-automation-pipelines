@@ -102,7 +102,6 @@ jobs:
     - get: installation-before
     - get: configuration
       passed: [export-installation-before]
-      trigger: true
   - task: credhub-interpolate
     <<: *credhub-interpolate
   - task: download-product
@@ -186,7 +185,6 @@ jobs:
       params: {unpack: true}
     - get: configuration
       passed: [upgrade-opsman]
-      trigger: true
   - task: credhub-interpolate
     <<: *credhub-interpolate
   - task: configure-director
@@ -260,7 +258,6 @@ jobs:
       params: {unpack: true}
     - get: configuration
       passed: [apply-director-changes]
-      trigger: true
   - task: credhub-interpolate
     <<: *credhub-interpolate
   - task: export-installation
